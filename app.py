@@ -116,4 +116,5 @@ def plot_y_distribution():
 
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    app.run(host="0.0.0.0", port=10000)
+
