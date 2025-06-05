@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Causal estimation</title>
+</head>
+<body>
+    <h1>Upload your datasets</h1>
+    <form action="/upload" method="post" enctype="multipart/form-data">
+        <label>Dataset obtained from the study population before the experiment (CSV):</label><br>
+        <input type="file" name="study_population" required><br><br>
+
+        <label>Dataset obtained from the study population after the experiment (CSV):</label><br>
+        <input type="file" name="study_population_with_intervention" required><br><br>
+
+        <label>Dataset obtained from the target population without intervention (CSV):</label><br>
+        <input type="file" name="target_population" required><br><br>
+
+        <!-- Le colonne X, Z e Y sono fisse a 1, non serve chiedere nulla -->
+        <label>Tolerance threshold for testing the criterion (default: 0.01):</label>
+        <input type="number" name="tolerance" step="0.001" value="0.01" required><br><br>
+
+        <button type="submit">Estimate</button>
+    </form>
+</body>
+</html>

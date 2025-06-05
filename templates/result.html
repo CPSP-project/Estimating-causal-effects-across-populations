@@ -1,0 +1,55 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>Results</title>
+    <style>
+        table {
+            border-collapse: collapse;
+            margin-bottom: 20px;
+        }
+        th, td {
+            padding: 8px 16px;
+            border-bottom: 1px solid #ddd;
+        }
+        th {
+            border-bottom: 2px solid #333;
+        }
+    </style>
+</head>
+<body>
+    <h1>Results</h1>
+
+    <h2>Criterion:</h2>    
+    <ul>
+        <li>Condition 1: {{ results.conditions.first }}</li>
+        <li>Condition 2: {{ results.conditions.second }}</li>
+    </ul>
+
+    <h2>Test Result:</h2>
+    <p>{{ results.message }}</p>
+
+    {% if results.transport_results %}
+        <h2>Estimated causal effect of X on Y in the target population:</h2>
+        {% for result in results.transport_results %}
+            <h3>
+              Result for X = {{ result.x.values() | list | join(', ') }}
+            </h3>
+            <div style="margin-bottom: 30px;">
+                {{ result.table|safe }}
+            </div>
+        {% endfor %}
+
+        <h2>Distribution of Z without the intervention:</h2>
+        <img src="{{ url_for('plot_z_distribution', z_col='Z') }}" alt="Z DISTRIBUTION">
+
+        <h2>Distribution of Y after the intervention:</h2>
+        <img src="{{ url_for('plot_y_distribution') }}" alt="Y DISTRIBUTION">
+    {% endif %}
+
+    <br>
+    <form action="/" method="get">
+        <button type="submit">Start New Estimation</button>
+    </form>
+</body>
+</html>
