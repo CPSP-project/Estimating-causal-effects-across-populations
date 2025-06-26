@@ -6,20 +6,27 @@
 </head>
 <body>
     <h1>Upload your datasets</h1>
+
+    <!-- Form to submit three required CSV datasets and a tolerance parameter -->
     <form action="/upload" method="post" enctype="multipart/form-data">
+
+        <!-- Study population before intervention (observational data) -->
         <label>Dataset obtained from the study population before the experiment (CSV):</label><br>
         <input type="file" name="study_population" required><br><br>
 
+        <!-- Study population after intervention (experimental data) -->
         <label>Dataset obtained from the study population after the experiment (CSV):</label><br>
         <input type="file" name="study_population_with_intervention" required><br><br>
 
+        <!-- Target population without any intervention (for transport) -->
         <label>Dataset obtained from the target population without intervention (CSV):</label><br>
         <input type="file" name="target_population" required><br><br>
 
-        <!-- Le colonne X, Z e Y sono fisse a 1, non serve chiedere nulla -->
+        <!-- Tolerance value for checking identifiability conditions -->
         <label>Tolerance threshold for testing the criterion (default: 0.01):</label>
         <input type="number" name="tolerance" step="0.001" value="0.01" required><br><br>
 
+        <!-- Submit button to trigger analysis -->
         <button type="submit">Estimate</button>
     </form>
 </body>

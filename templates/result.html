@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <title>Results</title>
     <style>
+        /* Table styling for better layout */
         table {
             border-collapse: collapse;
             margin-bottom: 20px;
@@ -20,33 +21,41 @@
 <body>
     <h1>Results</h1>
 
+    <!-- Display the two identifiability conditions -->
     <h2>Criterion:</h2>    
     <ul>
         <li>Condition 1: {{ results.conditions.first }}</li>
         <li>Condition 2: {{ results.conditions.second }}</li>
     </ul>
 
+    <!-- General analysis message (success/failure/info) -->
     <h2>Test Result:</h2>
     <p>{{ results.message }}</p>
 
-    {% if results.transport_results %}
+    {% if results.transport_results %}  <!-- Only render this section if results are available -->
         <h2>Estimated causal effect of X on Y in the target population:</h2>
-        {% for result in results.transport_results %}
-            <h3>
-              Result for X = {{ result.x.values() | list | join(', ') }}
-            </h3>
+        {% for result in results.transport_results %}  <!-- Loop through each X value result -->
+            <h3>Result for X = {{ result.x.values() | list | join(', ') }}</h3>
             <div style="margin-bottom: 30px;">
-                {{ result.table|safe }}
+                {{ result.table|safe }}  <!-- Render HTML table with probability values -->
             </div>
         {% endfor %}
 
+        <!-- Static image of Z distribution from study vs. target -->
         <h2>Distribution of Z without the intervention:</h2>
         <img src="{{ url_for('plot_z_distribution', z_col='Z') }}" alt="Z DISTRIBUTION">
 
-        <h2>Distribution of Y after the intervention:</h2>
-        <img src="{{ url_for('plot_y_distribution') }}" alt="Y DISTRIBUTION">
+        <!-- Only one image for Y distribution after the intervention for X = 1 -->
+        <h2>Distribution of Y after the intervention (X = 1):</h2>
+        {% for result in results.transport_results %}
+            {% if result.x.values() | list | join(', ') == '1' %}
+                {% set x_key = result.file | replace('transport_result_X_','') | replace('.csv','') %}
+                <img src="{{ url_for('plot_y_distribution', x_key=x_key) }}" alt="Y DISTRIBUTION for X = 1"><br><br>
+            {% endif %}
+        {% endfor %}
     {% endif %}
 
+    <!-- Button to return to homepage and restart analysis -->
     <br>
     <form action="/" method="get">
         <button type="submit">Start New Estimation</button>

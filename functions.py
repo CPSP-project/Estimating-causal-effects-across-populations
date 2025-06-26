@@ -1,55 +1,77 @@
 import pandas as pd
 
-def compute_joint_probability(df, columns):
+def compute_joint_probability(df, column):
     """
-    Group by the specified columns and compute the joint probability.
+    Compute joint probability over a single column.
+    Returns a DataFrame with unique values and their associated probabilities.
     """
-    counts = df.groupby(columns).size().reset_index(name='count')
-    total = counts['count'].sum()  # Total number of rows
-    counts['P_joint'] = counts['count'] / total  # Normalize to get the joint probability
+    counts = df.groupby(column).size().reset_index(name='count')
+    total = counts['count'].sum()
+    counts['P_joint'] = counts['count'] / total
     return counts
 
-def compute_marginal_probability(df, columns):
+def compute_marginal_probability(df, column):
     """
-    Compute the marginal probability for the specified column (or group of columns).
+    Compute marginal probability over a single column.
+    Returns a DataFrame with unique values and their associated probabilities.
     """
-    if not isinstance(columns, list):
-        columns = [columns]  # Convert 'columns' to a list if it is a single column (string), 
-                             # so that the function works uniformly with both single and multiple columns
-    counts = df.groupby(columns).size().reset_index(name='count')
+    counts = df.groupby(column).size().reset_index(name='count')
     total = counts['count'].sum()
     counts['P'] = counts['count'] / total
     return counts
 
-def compute_conditional_probability(df, group_cols, cond_col):
+def compute_conditional_probability(df, group_col, cond_col):
     """
-    Compute the conditional probability P(cond_col | group_cols) by grouping occurrences.
+    Compute conditional probability P(cond_col | group_col)
+    for two columns: one as grouping variable and one as conditioned.
+
+    Returns a DataFrame with columns:
+        group_col, cond_col, count, total, P_cond
     """
-    # If cond_col is a list, concatenate it directly; otherwise, convert it to a list
-    if isinstance(cond_col, list):
-        all_cols = group_cols + cond_col
-    else:
-        all_cols = group_cols + [cond_col]
-    
-    df_grouped = df.groupby(all_cols).size().reset_index(name='count')
-    df_grouped['total'] = df_grouped.groupby(group_cols)['count'].transform('sum')
+    df_grouped = (
+        df.groupby([group_col, cond_col])
+          .size()
+          .reset_index(name='count')
+    )
+    df_grouped['total'] = (
+        df_grouped.groupby(group_col)['count'].transform('sum')
+    )
     df_grouped['P_cond'] = df_grouped['count'] / df_grouped['total']
     return df_grouped
 
 def create_key(df, columns, key_name="Z_key"):
     """
-    Combine the specified columns (in 'columns') into a single string column called key_name.
+    Create a key column based on a single existing column.
+    Accepts either:
+        - a string representing a single column name
+        - a list/tuple with exactly one element
+    Raises an error if more than one column is provided.
     """
-    df[key_name] = df[columns].astype(str).agg('_'.join, axis=1)
+    if isinstance(columns, (list, tuple)):
+        if len(columns) != 1:
+            raise ValueError("create_key currently supports only a single column.")
+        columns = columns[0]
+
+    df[key_name] = df[columns].astype(str)  # Copy and convert column to string
     return df
 
-def extract_columns(df, num_x, num_z, num_y):
+def extract_columns(df):
     """
-    Estrae le colonne X, Z e Y dai primi N campi della tabella.
-    Assumiamo che dopo una colonna ID, le X vengano prima, poi Z, poi Y.
-    """
-    X_columns = list(df.columns[1 : 1 + num_x])
-    Z_columns = list(df.columns[1 + num_x : 1 + num_x + num_z])
-    Y_columns = list(df.columns[1 + num_x + num_z : 1 + num_x + num_z + num_y])
-    return X_columns, Z_columns, Y_columns
+    Extract column names for X, Z, and Y assuming a fixed structure:
+        - Column 0 is assumed to be ID
+        - Column 1 is X
+        - Column 2 is Z
+        - Column 3 is Y
 
+    Returns:
+        X_columns: list containing column name for X
+        Z_columns: list containing column name for Z
+        Y_columns: list containing column name for Y
+    """
+    if df.shape[1] < 4:
+        raise ValueError("At least 4 columns are required: ID, X, Z, Y")
+
+    X_columns = [df.columns[1]]
+    Z_columns = [df.columns[2]]
+    Y_columns = [df.columns[3]]
+    return X_columns, Z_columns, Y_columns
